@@ -2,14 +2,17 @@ package pl.allegro.tech.hermes.consumers.consumer.result;
 
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
 import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
+import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,11 +29,13 @@ public class DefaultSuccessHandler implements SuccessHandler {
     private final HermesCounter throughputInBytes;
     private final HermesCounter successes;
     private final HermesHistogram inflightTime;
+    private final HermesTimer messageProcessingTime;
 
     public DefaultSuccessHandler(OffsetQueue offsetQueue,
                                  MetricsFacade metrics,
                                  Trackers trackers,
-                                 SubscriptionName subscriptionName) {
+                                 SubscriptionName subscriptionName,
+                                 SubscriptionMetricsConfig metricsConfig) {
         this.offsetQueue = offsetQueue;
         this.metrics = metrics;
         this.trackers = trackers;
@@ -38,6 +43,9 @@ public class DefaultSuccessHandler implements SuccessHandler {
         this.throughputInBytes = metrics.subscriptions().throughputInBytes(subscriptionName);
         this.successes = metrics.subscriptions().successes(subscriptionName);
         this.inflightTime = metrics.subscriptions().inflightTimeInMillisHistogram(subscriptionName);
+        this.messageProcessingTime = metricsConfig.messageProcessingDuration().enabled() ?
+                metrics.subscriptions().messageProcessingTimeInMillisHistogram(subscriptionName, metricsConfig.messageProcessingDuration().options())
+                : null;
     }
 
     @Override
@@ -53,6 +61,7 @@ public class DefaultSuccessHandler implements SuccessHandler {
         throughputInBytes.increment(message.getSize());
         markHttpStatusCode(result.getStatusCode());
         inflightTime.record(System.currentTimeMillis() - message.getReadingTimestamp());
+        markMessageProcessingTime(message);
     }
 
     private void markHttpStatusCode(int statusCode) {
@@ -61,4 +70,12 @@ public class DefaultSuccessHandler implements SuccessHandler {
                 integer -> metrics.subscriptions().httpAnswerCounter(subscriptionName, statusCode)
         ).increment();
     }
+
+    private void markMessageProcessingTime(Message message) {
+        if (messageProcessingTime != null) {
+            Duration processingTime = Duration.ofMillis(System.currentTimeMillis() - message.getPublishingTimestamp());
+            messageProcessingTime.record(processingTime);
+        }
+    }
+
 }
