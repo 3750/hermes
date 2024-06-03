@@ -4,12 +4,16 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Timer;
 import pl.allegro.tech.hermes.api.SubscriptionName;
+import pl.allegro.tech.hermes.api.subscription.metrics.MessageProcessingDurationMetricOptions;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.function.ToDoubleFunction;
 
 import static pl.allegro.tech.hermes.common.metric.SubscriptionTagsFactory.subscriptionTags;
@@ -105,6 +109,16 @@ public class SubscriptionMetrics {
                 .record(value / 1000d);
     }
 
+    public HermesTimer messageProcessingTimeInMillisHistogram(SubscriptionName subscriptionName, MessageProcessingDurationMetricOptions options) {
+        Duration[] thresholds = Arrays.stream(options.thresholdsMilliseconds()).mapToObj(Duration::ofMillis).toArray(Duration[]::new);
+        return HermesTimer.from(
+                Timer.builder(SubscriptionMetricsNames.SUBSCRIPTION_PROCESSING_TIME)
+                        .tags(subscriptionTags(subscriptionName))
+                        .serviceLevelObjectives(thresholds)
+                        .register(meterRegistry)
+        );
+    }
+
     private Counter micrometerCounter(String metricName, SubscriptionName subscription) {
         return meterRegistry.counter(metricName, subscriptionTags(subscription));
     }
@@ -125,6 +139,7 @@ public class SubscriptionMetrics {
         public static final String SUBSCRIPTION_OTHER_ERRORS = "subscription.other-errors";
         public static final String SUBSCRIPTION_FAILURES = "subscription.failures";
         public static final String SUBSCRIPTION_INFLIGHT_TIME = "subscription.inflight-time-seconds";
+        public static final String SUBSCRIPTION_PROCESSING_TIME = "subscription.message-processing-time";
     }
 
 }

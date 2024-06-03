@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import pl.allegro.tech.hermes.api.constraints.ValidContentType;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -77,6 +78,8 @@ public class Subscription implements Anonymizable {
     private Instant createdAt;
 
     private Instant modifiedAt;
+
+    private SubscriptionMetricsConfig metricsConfig = SubscriptionMetricsConfig.DEFAULT;
 
     private Subscription(TopicName topicName,
                          String name,
@@ -435,6 +438,10 @@ public class Subscription implements Anonymizable {
 
     public boolean isAutoDeleteWithTopicEnabled() {
         return autoDeleteWithTopicEnabled;
+    }
+
+    public SubscriptionMetricsConfig getMetricsConfig() {
+        return metricsConfig;
     }
 
     @Override
