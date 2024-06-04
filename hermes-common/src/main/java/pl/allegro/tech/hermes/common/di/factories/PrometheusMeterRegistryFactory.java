@@ -48,10 +48,22 @@ public class PrometheusMeterRegistryFactory {
 
             @Override
             public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
+                if (!hasServiceLevelObjectiveBoundaries(config)) {
+                    return addPercentiles(config);
+                }
+                return config;
+            }
+
+            private static boolean hasServiceLevelObjectiveBoundaries(DistributionStatisticConfig config) {
+                return config.getServiceLevelObjectiveBoundaries() != null
+                        && config.getServiceLevelObjectiveBoundaries().length > 0;
+            }
+
+            private DistributionStatisticConfig addPercentiles(DistributionStatisticConfig config) {
                 return DistributionStatisticConfig.builder()
                         .percentiles(parameters.getPercentiles()
                                 .stream().mapToDouble(Double::doubleValue).toArray()
-                ).build().merge(config);
+                        ).build().merge(config);
             }
         });
     }
