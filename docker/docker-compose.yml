@@ -30,6 +30,11 @@ services:
       - kafka_data:/var/lib/kafka/data
       - kafka_secrets:/etc/kafka/secrets
 
+  prometheus:
+    image: "victoriametrics/victoria-metrics"
+    ports:
+      - '8428:8428'
+
   frontend:
     build:
       context: ../
@@ -44,6 +49,8 @@ services:
     build:
       context: ../
       dockerfile: ./docker/latest/consumers/Dockerfile
+    ports:
+      - "8070:8070"
     depends_on:
       - zk
       - kafka
@@ -54,9 +61,13 @@ services:
       dockerfile: ./docker/latest/management/Dockerfile
     ports:
       - "8090:8090"
+    environment:
+      PROMETHEUS_CLIENT_ENABLED: true
+      PROMETHEUS_CLIENT_EXTERNALMONITORINGURL: http://prometheus:8428
     depends_on:
       - zk
       - kafka
+      - prometheus
 
   schema-registry:
     image: "confluentinc/cp-schema-registry:${CONFLUENT_IMAGES_TAG}"
