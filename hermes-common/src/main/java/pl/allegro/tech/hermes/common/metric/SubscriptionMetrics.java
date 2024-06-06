@@ -110,11 +110,10 @@ public class SubscriptionMetrics {
     }
 
     public HermesTimer messageProcessingTimeInMillisHistogram(SubscriptionName subscriptionName, MessageProcessingDurationMetricOptions options) {
-        Duration[] thresholds = Arrays.stream(options.thresholdsMilliseconds()).mapToObj(Duration::ofMillis).toArray(Duration[]::new);
         return HermesTimer.from(
                 Timer.builder(SubscriptionMetricsNames.SUBSCRIPTION_PROCESSING_TIME)
                         .tags(subscriptionTags(subscriptionName))
-                        .serviceLevelObjectives(thresholds)
+                        .serviceLevelObjectives(options.getThresholdsDurations())
                         .register(meterRegistry)
         );
     }
