@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
-public class DefaultSuccessHandler implements SuccessHandler {
+public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChangeListener {
 
     private final Trackers trackers;
     private final SubscriptionName subscriptionName;
@@ -29,7 +29,7 @@ public class DefaultSuccessHandler implements SuccessHandler {
     private final HermesCounter throughputInBytes;
     private final HermesCounter successes;
     private final HermesHistogram inflightTime;
-    private final HermesTimer messageProcessingTime;
+    private volatile HermesTimer messageProcessingTime;
 
     public DefaultSuccessHandler(OffsetQueue offsetQueue,
                                  MetricsFacade metrics,
@@ -43,9 +43,9 @@ public class DefaultSuccessHandler implements SuccessHandler {
         this.throughputInBytes = metrics.subscriptions().throughputInBytes(subscriptionName);
         this.successes = metrics.subscriptions().successes(subscriptionName);
         this.inflightTime = metrics.subscriptions().inflightTimeInMillisHistogram(subscriptionName);
-        this.messageProcessingTime = metricsConfig.messageProcessingDuration().enabled() ?
-                metrics.subscriptions().messageProcessingTimeInMillisHistogram(subscriptionName, metricsConfig.messageProcessingDuration().options())
-                : null;
+        this.messageProcessingTime = this.metrics.subscriptions().messageProcessingTimeInMillisHistogram(
+                this.subscriptionName, metricsConfig.messageProcessingDuration()
+        );
     }
 
     @Override
@@ -54,6 +54,13 @@ public class DefaultSuccessHandler implements SuccessHandler {
                 message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
         markSuccess(message, result);
         trackers.get(subscription).logSent(toMessageMetadata(message, subscription), result.getHostname());
+    }
+
+    @Override
+    public void updateSubscription(Subscription subscription) {
+        this.messageProcessingTime = metrics.subscriptions().messageProcessingTimeInMillisHistogram(
+                this.subscriptionName, subscription.getMetricsConfig().messageProcessingDuration()
+        );
     }
 
     private void markSuccess(Message message, MessageSendingResult result) {
