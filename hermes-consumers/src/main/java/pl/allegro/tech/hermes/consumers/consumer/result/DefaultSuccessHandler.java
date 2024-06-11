@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.consumers.consumer.result;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
@@ -20,6 +22,8 @@ import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter
 import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChangeListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(DefaultSuccessHandler.class);
 
     private final Trackers trackers;
     private final SubscriptionName subscriptionName;
@@ -58,6 +62,7 @@ public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChange
 
     @Override
     public void updateSubscription(Subscription subscription) {
+        logger.info("Subscription {} updated. Metrics configuration: {}", subscription.getQualifiedName(), subscription.getMetricsConfig());
         this.messageProcessingTime = metrics.subscriptions().messageProcessingTimeInMillisHistogram(
                 this.subscriptionName, subscription.getMetricsConfig().messageProcessingDuration()
         );
