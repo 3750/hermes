@@ -7,13 +7,12 @@ import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.subscription.metrics.MessageProcessingDurationMetricOptions;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricConfig;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.counters.HermesCounters;
 
-import java.time.Duration;
-import java.util.Arrays;
 import java.util.function.ToDoubleFunction;
 
 import static pl.allegro.tech.hermes.common.metric.SubscriptionTagsFactory.subscriptionTags;
@@ -109,14 +108,17 @@ public class SubscriptionMetrics {
                 .record(value / 1000d);
     }
 
-    public HermesTimer messageProcessingTimeInMillisHistogram(SubscriptionName subscriptionName, MessageProcessingDurationMetricOptions options) {
-        Duration[] thresholds = Arrays.stream(options.thresholdsMilliseconds()).mapToObj(Duration::ofMillis).toArray(Duration[]::new);
-        return HermesTimer.from(
-                Timer.builder(SubscriptionMetricsNames.SUBSCRIPTION_PROCESSING_TIME)
-                        .tags(subscriptionTags(subscriptionName))
-                        .serviceLevelObjectives(thresholds)
-                        .register(meterRegistry)
-        );
+    public HermesTimer messageProcessingTimeInMillisHistogram(SubscriptionName subscriptionName, SubscriptionMetricConfig<MessageProcessingDurationMetricOptions> metricConfig) {
+        if (metricConfig.enabled()) {
+            return HermesTimer.from(
+                    Timer.builder(SubscriptionMetricsNames.SUBSCRIPTION_PROCESSING_TIME)
+                            .tags(subscriptionTags(subscriptionName))
+                            .serviceLevelObjectives(metricConfig.options().getThresholdsDurations())
+                            .register(meterRegistry)
+            );
+        } else {
+            return null;
+        }
     }
 
     private Counter micrometerCounter(String metricName, SubscriptionName subscription) {

@@ -15,6 +15,7 @@ import pl.allegro.tech.hermes.consumers.consumer.profiling.NoOpConsumerProfiler;
 import pl.allegro.tech.hermes.consumers.consumer.rate.InflightsPool;
 import pl.allegro.tech.hermes.consumers.consumer.rate.SerialConsumerRateLimiter;
 import pl.allegro.tech.hermes.consumers.consumer.result.ErrorHandler;
+import pl.allegro.tech.hermes.consumers.consumer.result.SubscriptionChangeListener;
 import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSender;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
@@ -190,6 +191,7 @@ public class ConsumerMessageSender {
         boolean oAuthPolicyChanged = !Objects.equals(
                 this.subscription.getOAuthPolicy(), newSubscription.getOAuthPolicy()
         );
+        boolean subscriptionMetricsConfigChanged = !Objects.equals(this.subscription.getMetricsConfig(), newSubscription.getMetricsConfig());
 
         this.subscription = newSubscription;
 
@@ -199,6 +201,13 @@ public class ConsumerMessageSender {
                 || oAuthPolicyChanged || httpClientChanged) {
             this.messageSender.stop();
             this.messageSender = messageSender(newSubscription);
+        }
+        // TODO subscriptionMetricsConfig changed - should we update success handlers or start a new messageSender?
+        if (subscriptionMetricsConfigChanged) {
+            this.successHandlers.stream()
+                    .filter(SubscriptionChangeListener.class::isInstance)
+                    .map(SubscriptionChangeListener.class::cast)
+                    .forEach(successHandler -> successHandler.updateSubscription(newSubscription));
         }
     }
 
