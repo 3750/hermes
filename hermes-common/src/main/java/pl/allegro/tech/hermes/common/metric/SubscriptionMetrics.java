@@ -2,6 +2,7 @@ package pl.allegro.tech.hermes.common.metric;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
@@ -109,6 +110,7 @@ public class SubscriptionMetrics {
     }
 
     public HermesTimer messageProcessingTimeInMillisHistogram(SubscriptionName subscriptionName, SubscriptionMetricConfig<MessageProcessingDurationMetricOptions> metricConfig) {
+        removeExistingMeter(SubscriptionMetricsNames.SUBSCRIPTION_PROCESSING_TIME);
         if (metricConfig.enabled()) {
             return HermesTimer.from(
                     Timer.builder(SubscriptionMetricsNames.SUBSCRIPTION_PROCESSING_TIME)
@@ -123,6 +125,13 @@ public class SubscriptionMetrics {
 
     private Counter micrometerCounter(String metricName, SubscriptionName subscription) {
         return meterRegistry.counter(metricName, subscriptionTags(subscription));
+    }
+
+    private void removeExistingMeter(String metricName) {
+        Meter existingMeter = meterRegistry.find(metricName).meter();
+        if (existingMeter != null) {
+            meterRegistry.remove(existingMeter);
+        }
     }
 
     public static class SubscriptionMetricsNames {
