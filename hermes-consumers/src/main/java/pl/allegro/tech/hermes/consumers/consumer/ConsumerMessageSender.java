@@ -202,7 +202,6 @@ public class ConsumerMessageSender {
             this.messageSender.stop();
             this.messageSender = messageSender(newSubscription);
         }
-        // TODO subscriptionMetricsConfig changed - should we update success handlers or start a new messageSender?
         if (subscriptionMetricsConfigChanged) {
             this.successHandlers.stream()
                     .filter(SubscriptionChangeListener.class::isInstance)
