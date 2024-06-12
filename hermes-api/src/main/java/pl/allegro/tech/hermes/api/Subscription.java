@@ -79,7 +79,7 @@ public class Subscription implements Anonymizable {
 
     private Instant modifiedAt;
 
-    private SubscriptionMetricsConfig metricsConfig = SubscriptionMetricsConfig.DEFAULT;
+    private SubscriptionMetricsConfig metricsConfig = SubscriptionMetricsConfig.DISABLED;
 
     private Subscription(TopicName topicName,
                          String name,
