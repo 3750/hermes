@@ -34,6 +34,18 @@ services:
     image: "victoriametrics/victoria-metrics"
     ports:
       - '8428:8428'
+    depends_on:
+      - vmagent
+
+  vmagent:
+    image: "victoriametrics/vmagent"
+    ports:
+      - '8429:8429'
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+      - "--remoteWrite.url=http://prometheus:8428/api/v1/write"
 
   frontend:
     build:
