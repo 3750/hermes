@@ -26,55 +26,38 @@ import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig
     allowGetters = true)
 public class Subscription implements Anonymizable {
 
-  @NotNull
-  private final MonitoringDetails monitoringDetails;
+  @NotNull private final MonitoringDetails monitoringDetails;
   private final SubscriptionName subscriptionName;
-  @Valid
-  @NotNull
-  private TopicName topicName;
+  @Valid @NotNull private TopicName topicName;
 
   @NotEmpty
   @Pattern(regexp = ALLOWED_NAME_REGEX)
   private String name;
 
   private State state = State.PENDING;
-  @NotNull
-  @Valid
-  private EndpointAddress endpoint;
-  @NotNull
-  private ContentType contentType = ContentType.JSON;
-  @NotNull
-  private String description;
-  @Valid
-  private SubscriptionPolicy serialSubscriptionPolicy;
-  @Valid
-  private BatchSubscriptionPolicy batchSubscriptionPolicy;
+  @NotNull @Valid private EndpointAddress endpoint;
+  @NotNull private ContentType contentType = ContentType.JSON;
+  @NotNull private String description;
+  @Valid private SubscriptionPolicy serialSubscriptionPolicy;
+  @Valid private BatchSubscriptionPolicy batchSubscriptionPolicy;
 
-  /**
-   * Use trackingMode field instead.
-   */
-  @Deprecated
-  private boolean trackingEnabled = false;
+  /** Use trackingMode field instead. */
+  @Deprecated private boolean trackingEnabled = false;
 
   private TrackingMode trackingMode = TrackingMode.TRACKING_OFF;
   private boolean http2Enabled = false;
   private boolean profilingEnabled = false;
   private long profilingThresholdMs = 0;
-  @Valid
-  @NotNull
-  private OwnerId owner;
-  @NotNull
-  private DeliveryType deliveryType = DeliveryType.SERIAL;
-  @NotNull
-  private SubscriptionMode mode = SubscriptionMode.ANYCAST;
+  @Valid @NotNull private OwnerId owner;
+  @NotNull private DeliveryType deliveryType = DeliveryType.SERIAL;
+  @NotNull private SubscriptionMode mode = SubscriptionMode.ANYCAST;
   private List<MessageFilterSpecification> filters = new ArrayList<>();
- 
+
   private List<Header> headers;
 
   private EndpointAddressResolverMetadata endpointAddressResolverMetadata;
 
-  @Valid
-  private SubscriptionOAuthPolicy oAuthPolicy;
+  @Valid private SubscriptionOAuthPolicy oAuthPolicy;
 
   private boolean subscriptionIdentityHeadersEnabled;
 
@@ -86,28 +69,29 @@ public class Subscription implements Anonymizable {
 
   private SubscriptionMetricsConfig metricsConfig = SubscriptionMetricsConfig.DISABLED;
 
-  private Subscription(TopicName topicName,
-                       String name,
-                       EndpointAddress endpoint,
-                       State state,
-                       String description,
-                       Object subscriptionPolicy,
-                       boolean trackingEnabled,
-                       TrackingMode trackingMode,
-                       OwnerId owner,
-                       MonitoringDetails monitoringDetails,
-                       ContentType contentType,
-                       DeliveryType deliveryType,
-                       List<MessageFilterSpecification> filters,
-                       SubscriptionMode mode,
-                       List<Header> headers,
-                       EndpointAddressResolverMetadata endpointAddressResolverMetadata,
-                       SubscriptionOAuthPolicy oAuthPolicy,
-                       boolean http2Enabled,
-                       boolean profilingEnabled,
-                       long profilingThresholdMs,
-                       boolean subscriptionIdentityHeadersEnabled,
-                       boolean autoDeleteWithTopicEnabled) {
+  private Subscription(
+      TopicName topicName,
+      String name,
+      EndpointAddress endpoint,
+      State state,
+      String description,
+      Object subscriptionPolicy,
+      boolean trackingEnabled,
+      TrackingMode trackingMode,
+      OwnerId owner,
+      MonitoringDetails monitoringDetails,
+      ContentType contentType,
+      DeliveryType deliveryType,
+      List<MessageFilterSpecification> filters,
+      SubscriptionMode mode,
+      List<Header> headers,
+      EndpointAddressResolverMetadata endpointAddressResolverMetadata,
+      SubscriptionOAuthPolicy oAuthPolicy,
+      boolean http2Enabled,
+      boolean profilingEnabled,
+      long profilingThresholdMs,
+      boolean subscriptionIdentityHeadersEnabled,
+      boolean autoDeleteWithTopicEnabled) {
     this.topicName = topicName;
     this.name = name;
     this.endpoint = endpoint;
@@ -248,13 +232,13 @@ public class Subscription implements Anonymizable {
       @JsonProperty("mode") SubscriptionMode mode,
       @JsonProperty("headers") List<Header> headers,
       @JsonProperty("endpointAddressResolverMetadata")
-      EndpointAddressResolverMetadata endpointAddressResolverMetadata,
+          EndpointAddressResolverMetadata endpointAddressResolverMetadata,
       @JsonProperty("oAuthPolicy") SubscriptionOAuthPolicy oAuthPolicy,
       @JsonProperty("http2Enabled") boolean http2Enabled,
       @JsonProperty("profilingEnabled") boolean profilingEnabled,
       @JsonProperty("profilingThresholdMs") long profilingThresholdMs,
       @JsonProperty("subscriptionIdentityHeadersEnabled")
-      boolean subscriptionIdentityHeadersEnabled,
+          boolean subscriptionIdentityHeadersEnabled,
       @JsonProperty("autoDeleteWithTopicEnabled") boolean autoDeleteWithTopicEnabled) {
 
     DeliveryType validDeliveryType = deliveryType == null ? DeliveryType.SERIAL : deliveryType;
@@ -344,13 +328,13 @@ public class Subscription implements Anonymizable {
         && Objects.equals(this.mode, other.mode)
         && Objects.equals(this.headers, other.headers)
         && Objects.equals(
-        this.endpointAddressResolverMetadata, other.endpointAddressResolverMetadata)
+            this.endpointAddressResolverMetadata, other.endpointAddressResolverMetadata)
         && Objects.equals(this.http2Enabled, other.http2Enabled)
         && Objects.equals(this.profilingEnabled, other.profilingEnabled)
         && Objects.equals(this.profilingThresholdMs, other.profilingThresholdMs)
         && Objects.equals(this.oAuthPolicy, other.oAuthPolicy)
         && Objects.equals(
-        this.subscriptionIdentityHeadersEnabled, other.subscriptionIdentityHeadersEnabled)
+            this.subscriptionIdentityHeadersEnabled, other.subscriptionIdentityHeadersEnabled)
         && Objects.equals(this.autoDeleteWithTopicEnabled, other.autoDeleteWithTopicEnabled);
   }
 

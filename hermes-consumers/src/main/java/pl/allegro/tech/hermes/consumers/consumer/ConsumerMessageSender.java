@@ -66,18 +66,18 @@ public class ConsumerMessageSender {
   private volatile boolean running = true;
 
   public ConsumerMessageSender(
-          Subscription subscription,
-          MessageSenderFactory messageSenderFactory,
-          List<SuccessHandler> successHandlers,
-          List<ErrorHandler> errorHandlers,
-          SerialConsumerRateLimiter rateLimiter,
-          ExecutorService deliveryReportingExecutor,
-          PendingOffsets pendingOffsets,
-          MetricsFacade metrics,
-          int asyncTimeoutMs,
-          FutureAsyncTimeout futureAsyncTimeout,
-          Clock clock,
-          SubscriptionLoadRecorder loadRecorder) {
+      Subscription subscription,
+      MessageSenderFactory messageSenderFactory,
+      List<SuccessHandler> successHandlers,
+      List<ErrorHandler> errorHandlers,
+      SerialConsumerRateLimiter rateLimiter,
+      ExecutorService deliveryReportingExecutor,
+      PendingOffsets pendingOffsets,
+      MetricsFacade metrics,
+      int asyncTimeoutMs,
+      FutureAsyncTimeout futureAsyncTimeout,
+      Clock clock,
+      SubscriptionLoadRecorder loadRecorder) {
     this.deliveryReportingExecutor = deliveryReportingExecutor;
     this.successHandlers = successHandlers;
     this.errorHandlers = errorHandlers;
@@ -92,20 +92,20 @@ public class ConsumerMessageSender {
     this.pendingOffsets = pendingOffsets;
     this.consumerLatencyTimer = metrics.subscriptions().latency(subscription.getQualifiedName());
     metrics
-            .subscriptions()
-            .registerInflightGauge(
-                    subscription.getQualifiedName(), this, sender -> sender.inflightCount.doubleValue());
+        .subscriptions()
+        .registerInflightGauge(
+            subscription.getQualifiedName(), this, sender -> sender.inflightCount.doubleValue());
     this.retries = metrics.subscriptions().retries(subscription.getQualifiedName());
     this.rateLimiterAcquireTimer =
-            metrics.subscriptions().rateLimiterAcquire(subscription.getQualifiedName());
+        metrics.subscriptions().rateLimiterAcquire(subscription.getQualifiedName());
   }
 
   public void initialize() {
     running = true;
     ThreadFactory threadFactory =
-            new ThreadFactoryBuilder()
-                    .setNameFormat(subscription.getQualifiedName() + "-retry-executor-%d")
-                    .build();
+        new ThreadFactoryBuilder()
+            .setNameFormat(subscription.getQualifiedName() + "-retry-executor-%d")
+            .build();
     this.retrySingleThreadExecutor = Executors.newScheduledThreadPool(1, threadFactory);
   }
 
@@ -128,7 +128,7 @@ public class ConsumerMessageSender {
   private void sendAsync(Message message, int delayMillis, ConsumerProfiler profiler) {
     profiler.measure(Measurement.SCHEDULE_MESSAGE_SENDING);
     retrySingleThreadExecutor.schedule(
-            () -> sendMessage(message, profiler), delayMillis, TimeUnit.MILLISECONDS);
+        () -> sendMessage(message, profiler), delayMillis, TimeUnit.MILLISECONDS);
   }
 
   private int calculateMessageDelay(long publishingMessageTimestamp) {
@@ -158,19 +158,19 @@ public class ConsumerMessageSender {
     CompletableFuture<MessageSendingResult> response = messageSender.send(message);
 
     response
-            .thenAcceptAsync(
-                    new ResponseHandlingListener(message, timer, profiler), deliveryReportingExecutor)
-            .exceptionally(
-                    e -> {
-                      logger.error(
-                              "An error occurred while handling message sending response of subscription {} [partition={}, offset={}, id={}]",
-                              subscription.getQualifiedName(),
-                              message.getPartition(),
-                              message.getOffset(),
-                              message.getId(),
-                              e);
-                      return null;
-                    });
+        .thenAcceptAsync(
+            new ResponseHandlingListener(message, timer, profiler), deliveryReportingExecutor)
+        .exceptionally(
+            e -> {
+              logger.error(
+                  "An error occurred while handling message sending response of subscription {} [partition={}, offset={}, id={}]",
+                  subscription.getQualifiedName(),
+                  message.getPartition(),
+                  message.getOffset(),
+                  message.getId(),
+                  e);
+              return null;
+            });
   }
 
   private void acquireRateLimiterWithTimer() {
@@ -182,67 +182,66 @@ public class ConsumerMessageSender {
   private MessageSender messageSender(Subscription subscription) {
     Integer requestTimeoutMs = subscription.getSerialSubscriptionPolicy().getRequestTimeout();
     ResilientMessageSender resilientMessageSender =
-            new ResilientMessageSender(
-                    this.rateLimiter, subscription, this.async, requestTimeoutMs, this.asyncTimeoutMs);
+        new ResilientMessageSender(
+            this.rateLimiter, subscription, this.async, requestTimeoutMs, this.asyncTimeoutMs);
 
     return this.messageSenderFactory.create(subscription, resilientMessageSender);
   }
 
   public void updateSubscription(Subscription newSubscription) {
     boolean endpointUpdated =
-            !this.subscription.getEndpoint().equals(newSubscription.getEndpoint());
+        !this.subscription.getEndpoint().equals(newSubscription.getEndpoint());
     boolean subscriptionPolicyUpdated =
-            !Objects.equals(
-                    this.subscription.getSerialSubscriptionPolicy(),
-                    newSubscription.getSerialSubscriptionPolicy());
+        !Objects.equals(
+            this.subscription.getSerialSubscriptionPolicy(),
+            newSubscription.getSerialSubscriptionPolicy());
     boolean endpointAddressResolverMetadataChanged =
-            !Objects.equals(
-                    this.subscription.getEndpointAddressResolverMetadata(),
-                    newSubscription.getEndpointAddressResolverMetadata()
-            );
-    boolean oAuthPolicyChanged = !Objects.equals(
-            this.subscription.getOAuthPolicy(), newSubscription.getOAuthPolicy()
-    );
-    boolean subscriptionMetricsConfigChanged = !Objects.equals(this.subscription.getMetricsConfig(), newSubscription.getMetricsConfig());
+        !Objects.equals(
+            this.subscription.getEndpointAddressResolverMetadata(),
+            newSubscription.getEndpointAddressResolverMetadata());
+    boolean oAuthPolicyChanged =
+        !Objects.equals(this.subscription.getOAuthPolicy(), newSubscription.getOAuthPolicy());
+    boolean subscriptionMetricsConfigChanged =
+        !Objects.equals(this.subscription.getMetricsConfig(), newSubscription.getMetricsConfig());
 
     this.subscription = newSubscription;
 
     boolean httpClientChanged =
-            this.subscription.isHttp2Enabled() != newSubscription.isHttp2Enabled();
+        this.subscription.isHttp2Enabled() != newSubscription.isHttp2Enabled();
 
     if (endpointUpdated
-            || subscriptionPolicyUpdated
-            || endpointAddressResolverMetadataChanged
-            || oAuthPolicyChanged
-            || httpClientChanged) {
+        || subscriptionPolicyUpdated
+        || endpointAddressResolverMetadataChanged
+        || oAuthPolicyChanged
+        || httpClientChanged) {
       this.messageSender.stop();
       this.messageSender = messageSender(newSubscription);
     }
     if (subscriptionMetricsConfigChanged) {
       this.successHandlers.stream()
-              .filter(SubscriptionChangeListener.class::isInstance)
-              .map(SubscriptionChangeListener.class::cast)
-              .forEach(successHandler -> successHandler.updateSubscription(newSubscription));
+          .filter(SubscriptionChangeListener.class::isInstance)
+          .map(SubscriptionChangeListener.class::cast)
+          .forEach(successHandler -> successHandler.updateSubscription(newSubscription));
     }
   }
 
   private boolean willExceedTtl(Message message, long delay) {
     long ttl =
-            TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
+        TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
     long remainingTtl = Math.max(ttl - delay, 0);
     return message.isTtlExceeded(remainingTtl);
   }
 
   private void handleFailedSending(
-          Message message, MessageSendingResult result, ConsumerProfiler profiler) {
+      Message message, MessageSendingResult result, ConsumerProfiler profiler) {
     errorHandlers.forEach(h -> h.handleFailed(message, subscription, result));
     retrySendingOrDiscard(message, result, profiler);
   }
 
   private void retrySendingOrDiscard(
-          Message message, MessageSendingResult result, ConsumerProfiler profiler) {
+      Message message, MessageSendingResult result, ConsumerProfiler profiler) {
     List<URI> succeededUris =
-            result.getSucceededUris(ConsumerMessageSender.this::messageSentSucceeded);
+        result.getSucceededUris(ConsumerMessageSender.this::messageSentSucceeded);
     message.incrementRetryCounter(succeededUris);
 
     long retryDelay = extractRetryDelay(message, result);
@@ -250,29 +249,29 @@ public class ConsumerMessageSender {
       retries.increment();
       profiler.flushMeasurements(ConsumerRun.RETRIED);
       ConsumerProfiler resendProfiler =
-              subscription.isProfilingEnabled()
-                      ? new DefaultConsumerProfiler(
-                      subscription.getQualifiedName(), subscription.getProfilingThresholdMs())
-                      : new NoOpConsumerProfiler();
+          subscription.isProfilingEnabled()
+              ? new DefaultConsumerProfiler(
+                  subscription.getQualifiedName(), subscription.getProfilingThresholdMs())
+              : new NoOpConsumerProfiler();
       resendProfiler.startMeasurements(Measurement.SCHEDULE_RESEND);
       resendProfiler.saveRetryDelay(retryDelay);
       retrySingleThreadExecutor.schedule(
-              () -> resend(message, result, resendProfiler), retryDelay, TimeUnit.MILLISECONDS);
+          () -> resend(message, result, resendProfiler), retryDelay, TimeUnit.MILLISECONDS);
     } else {
       handleMessageDiscarding(message, result, profiler);
     }
   }
 
   private boolean shouldAttemptResending(
-          Message message, MessageSendingResult result, long retryDelay) {
+      Message message, MessageSendingResult result, long retryDelay) {
     return !willExceedTtl(message, retryDelay) && shouldResendMessage(result);
   }
 
   private long extractRetryDelay(Message message, MessageSendingResult result) {
     long defaultBackoff =
-            message.updateAndGetCurrentMessageBackoff(subscription.getSerialSubscriptionPolicy());
+        message.updateAndGetCurrentMessageBackoff(subscription.getSerialSubscriptionPolicy());
     long ttl =
-            TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
+        TimeUnit.SECONDS.toMillis(subscription.getSerialSubscriptionPolicy().getMessageTtl());
     return result.getRetryAfterMillis().map(delay -> Math.min(delay, ttl)).orElse(defaultBackoff);
   }
 
@@ -285,36 +284,36 @@ public class ConsumerMessageSender {
 
   private void logResultInfo(Message message, MessageSendingResultLogInfo logInfo) {
     logger.debug(
-            format(
-                    "Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
-                    logInfo.getUrlString(),
-                    message.getId(),
-                    message.getOffset(),
-                    message.getPartition(),
-                    subscription.getQualifiedName(),
-                    logInfo.getRootCause()),
-            logInfo.getFailure());
+        format(
+            "Retrying message send to endpoint %s; messageId %s; offset: %s; partition: %s; sub id: %s; rootCause: %s",
+            logInfo.getUrlString(),
+            message.getId(),
+            message.getOffset(),
+            message.getPartition(),
+            subscription.getQualifiedName(),
+            logInfo.getRootCause()),
+        logInfo.getFailure());
   }
 
   private void handleMessageDiscarding(
-          Message message, MessageSendingResult result, ConsumerProfiler profiler) {
+      Message message, MessageSendingResult result, ConsumerProfiler profiler) {
     pendingOffsets.markAsProcessed(
-            subscriptionPartitionOffset(
-                    subscription.getQualifiedName(),
-                    message.getPartitionOffset(),
-                    message.getPartitionAssignmentTerm()));
+        subscriptionPartitionOffset(
+            subscription.getQualifiedName(),
+            message.getPartitionOffset(),
+            message.getPartitionAssignmentTerm()));
     inflightCount.decrement();
     errorHandlers.forEach(h -> h.handleDiscarded(message, subscription, result));
     profiler.flushMeasurements(ConsumerRun.DISCARDED);
   }
 
   private void handleMessageSendingSuccess(
-          Message message, MessageSendingResult result, ConsumerProfiler profiler) {
+      Message message, MessageSendingResult result, ConsumerProfiler profiler) {
     pendingOffsets.markAsProcessed(
-            subscriptionPartitionOffset(
-                    subscription.getQualifiedName(),
-                    message.getPartitionOffset(),
-                    message.getPartitionAssignmentTerm()));
+        subscriptionPartitionOffset(
+            subscription.getQualifiedName(),
+            message.getPartitionOffset(),
+            message.getPartitionAssignmentTerm()));
     inflightCount.decrement();
     successHandlers.forEach(h -> h.handleSuccess(message, subscription, result));
     profiler.flushMeasurements(ConsumerRun.DELIVERED);
@@ -326,7 +325,7 @@ public class ConsumerMessageSender {
 
   private boolean shouldResendMessage(MessageSendingResult result) {
     return !result.succeeded()
-            && (!result.isClientError()
+        && (!result.isClientError()
             || shouldRetryOnClientError()
             || isUnauthorizedForOAuthSecuredSubscription(result));
   }
@@ -346,7 +345,7 @@ public class ConsumerMessageSender {
     private final ConsumerProfiler profiler;
 
     public ResponseHandlingListener(
-            Message message, HermesTimerContext timer, ConsumerProfiler profiler) {
+        Message message, HermesTimerContext timer, ConsumerProfiler profiler) {
       this.message = message;
       this.timer = timer;
       this.profiler = profiler;
@@ -365,13 +364,13 @@ public class ConsumerMessageSender {
         }
       } else {
         logger.warn(
-                "Process of subscription {} is not running. "
-                        + "Ignoring sending message result [successful={}, partition={}, offset={}, id={}]",
-                subscription.getQualifiedName(),
-                result.succeeded(),
-                message.getPartition(),
-                message.getOffset(),
-                message.getId());
+            "Process of subscription {} is not running. "
+                + "Ignoring sending message result [successful={}, partition={}, offset={}, id={}]",
+            subscription.getQualifiedName(),
+            result.succeeded(),
+            message.getPartition(),
+            message.getOffset(),
+            message.getId());
       }
     }
   }

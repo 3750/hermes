@@ -31,36 +31,44 @@ public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChange
   private final HermesHistogram inflightTime;
   private volatile HermesTimer messageProcessingTime;
 
-  public DefaultSuccessHandler(MetricsFacade metrics,
-                               Trackers trackers,
-                               SubscriptionName subscriptionName,
-                               SubscriptionMetricsConfig metricsConfig) {
+  public DefaultSuccessHandler(
+      MetricsFacade metrics,
+      Trackers trackers,
+      SubscriptionName subscriptionName,
+      SubscriptionMetricsConfig metricsConfig) {
     this.metrics = metrics;
     this.trackers = trackers;
     this.subscriptionName = subscriptionName;
     this.throughputInBytes = metrics.subscriptions().throughputInBytes(subscriptionName);
     this.successes = metrics.subscriptions().successes(subscriptionName);
     this.inflightTime = metrics.subscriptions().inflightTimeInMillisHistogram(subscriptionName);
-    this.messageProcessingTime = this.metrics.subscriptions().messageProcessingTimeInMillisHistogram(
-            this.subscriptionName, metricsConfig.messageProcessingDuration()
-    );
+    this.messageProcessingTime =
+        this.metrics
+            .subscriptions()
+            .messageProcessingTimeInMillisHistogram(
+                this.subscriptionName, metricsConfig.messageProcessingDuration());
   }
 
   @Override
   public void handleSuccess(
-          Message message, Subscription subscription, MessageSendingResult result) {
+      Message message, Subscription subscription, MessageSendingResult result) {
     markSuccess(message, result);
     trackers
-            .get(subscription)
-            .logSent(toMessageMetadata(message, subscription), result.getHostname());
+        .get(subscription)
+        .logSent(toMessageMetadata(message, subscription), result.getHostname());
   }
 
   @Override
   public void updateSubscription(Subscription subscription) {
-    logger.info("Subscription {} updated. Metrics configuration: {}", subscription.getQualifiedName(), subscription.getMetricsConfig());
-    this.messageProcessingTime = metrics.subscriptions().messageProcessingTimeInMillisHistogram(
-            this.subscriptionName, subscription.getMetricsConfig().messageProcessingDuration()
-    );
+    logger.info(
+        "Subscription {} updated. Metrics configuration: {}",
+        subscription.getQualifiedName(),
+        subscription.getMetricsConfig());
+    this.messageProcessingTime =
+        metrics
+            .subscriptions()
+            .messageProcessingTimeInMillisHistogram(
+                this.subscriptionName, subscription.getMetricsConfig().messageProcessingDuration());
   }
 
   private void markSuccess(Message message, MessageSendingResult result) {
@@ -73,17 +81,17 @@ public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChange
 
   private void markHttpStatusCode(int statusCode) {
     httpStatusCodes
-            .computeIfAbsent(
-                    statusCode,
-                    integer -> metrics.subscriptions().httpAnswerCounter(subscriptionName, statusCode))
-            .increment();
+        .computeIfAbsent(
+            statusCode,
+            integer -> metrics.subscriptions().httpAnswerCounter(subscriptionName, statusCode))
+        .increment();
   }
 
   private void markMessageProcessingTime(Message message) {
     if (messageProcessingTime != null) {
-      Duration processingTime = Duration.ofMillis(System.currentTimeMillis() - message.getPublishingTimestamp());
+      Duration processingTime =
+          Duration.ofMillis(System.currentTimeMillis() - message.getPublishingTimestamp());
       messageProcessingTime.record(processingTime);
     }
   }
-
 }
