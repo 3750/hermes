@@ -1,5 +1,7 @@
 package pl.allegro.tech.hermes.api;
 
+import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -8,9 +10,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import pl.allegro.tech.hermes.api.constraints.ValidContentType;
-import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,8 +17,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static pl.allegro.tech.hermes.api.constraints.Names.ALLOWED_NAME_REGEX;
+import pl.allegro.tech.hermes.api.constraints.ValidContentType;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 
 @ValidContentType(message = "AVRO content type is not supported in BATCH delivery mode")
 @JsonIgnoreProperties(
@@ -69,7 +68,7 @@ public class Subscription implements Anonymizable {
   @NotNull
   private SubscriptionMode mode = SubscriptionMode.ANYCAST;
   private List<MessageFilterSpecification> filters = new ArrayList<>();
-
+ 
   private List<Header> headers;
 
   private EndpointAddressResolverMetadata endpointAddressResolverMetadata;

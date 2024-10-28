@@ -14,56 +14,59 @@ import pl.allegro.tech.hermes.common.metric.counter.CounterStorage;
 import pl.allegro.tech.hermes.common.metric.counter.zookeeper.ZookeeperCounterReporter;
 
 public class PrometheusMeterRegistryFactory {
-    private final MicrometerRegistryParameters parameters;
-    private final PrometheusConfig prometheusConfig;
-    private final CounterStorage counterStorage;
-    private final String prefix;
+  private final MicrometerRegistryParameters parameters;
+  private final PrometheusConfig prometheusConfig;
+  private final CounterStorage counterStorage;
+  private final String prefix;
 
   public PrometheusMeterRegistryFactory(
       MicrometerRegistryParameters parameters,
-                                          PrometheusConfig prometheusConfig,
+      PrometheusConfig prometheusConfig,
       CounterStorage counterStorage,
       String prefix) {
-        this.parameters = parameters;
-        this.prometheusConfig = prometheusConfig;
-        this.counterStorage = counterStorage;
-        this.prefix = prefix + "_";
-    }
+    this.parameters = parameters;
+    this.prometheusConfig = prometheusConfig;
+    this.counterStorage = counterStorage;
+    this.prefix = prefix + "_";
+  }
 
-    public PrometheusMeterRegistry provide() {
-        PrometheusMeterRegistry meterRegistry = new PrometheusMeterRegistry(prometheusConfig);
-        applyFilters(meterRegistry);
-        if (parameters.zookeeperReporterEnabled()) {
-            registerZookeeperReporter(meterRegistry);
-        }
-        registerJvmMetrics(meterRegistry);
-        return meterRegistry;
+  public PrometheusMeterRegistry provide() {
+    PrometheusMeterRegistry meterRegistry = new PrometheusMeterRegistry(prometheusConfig);
+    applyFilters(meterRegistry);
+    if (parameters.zookeeperReporterEnabled()) {
+      registerZookeeperReporter(meterRegistry);
     }
+    registerJvmMetrics(meterRegistry);
+    return meterRegistry;
+  }
 
-    private void applyFilters(PrometheusMeterRegistry meterRegistry) {
+  private void applyFilters(PrometheusMeterRegistry meterRegistry) {
     meterRegistry
         .config()
         .meterFilter(
             new MeterFilter() {
-            @Override
-            public Meter.Id map(Meter.Id id) {
+              @Override
+              public Meter.Id map(Meter.Id id) {
                 return id.withName(prefix + id.getName());
-            }
+              }
 
-            @Override
-            public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
+              @Override
+              public DistributionStatisticConfig configure(
+                  Meter.Id id, DistributionStatisticConfig config) {
                 if (!hasServiceLevelObjectiveBoundaries(config)) {
-                    return addPercentiles(config);
+                  return addPercentiles(config);
                 }
                 return config;
-            }
+              }
 
-            private static boolean hasServiceLevelObjectiveBoundaries(DistributionStatisticConfig config) {
+              private static boolean hasServiceLevelObjectiveBoundaries(
+                  DistributionStatisticConfig config) {
                 return config.getServiceLevelObjectiveBoundaries() != null
-                        && config.getServiceLevelObjectiveBoundaries().length > 0;
-            }
+                    && config.getServiceLevelObjectiveBoundaries().length > 0;
+              }
 
-            private DistributionStatisticConfig addPercentiles(DistributionStatisticConfig config) {
+              private DistributionStatisticConfig addPercentiles(
+                  DistributionStatisticConfig config) {
                 return DistributionStatisticConfig.builder()
                     .percentiles(
                         parameters.getPercentiles().stream()
@@ -71,18 +74,18 @@ public class PrometheusMeterRegistryFactory {
                             .toArray())
                     .build()
                     .merge(config);
-            }
-        });
-    }
+              }
+            });
+  }
 
-    private void registerZookeeperReporter(PrometheusMeterRegistry meterRegistry) {
-        new ZookeeperCounterReporter(meterRegistry, counterStorage, prefix)
-                .start(parameters.zookeeperReportPeriod().toSeconds(), TimeUnit.SECONDS);
-    }
+  private void registerZookeeperReporter(PrometheusMeterRegistry meterRegistry) {
+    new ZookeeperCounterReporter(meterRegistry, counterStorage, prefix)
+        .start(parameters.zookeeperReportPeriod().toSeconds(), TimeUnit.SECONDS);
+  }
 
-    private void registerJvmMetrics(MeterRegistry meterRegistry) {
-        new JvmMemoryMetrics().bindTo(meterRegistry);
-        new JvmGcMetrics().bindTo(meterRegistry);
-        new JvmThreadMetrics().bindTo(meterRegistry);
-    }
+  private void registerJvmMetrics(MeterRegistry meterRegistry) {
+    new JvmMemoryMetrics().bindTo(meterRegistry);
+    new JvmGcMetrics().bindTo(meterRegistry);
+    new JvmThreadMetrics().bindTo(meterRegistry);
+  }
 }
