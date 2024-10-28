@@ -1,6 +1,21 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
+import static java.lang.String.format;
+import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
+import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
+
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.net.URI;
+import java.time.Clock;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.LongAdder;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,22 +40,6 @@ import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeo
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.metrics.HermesTimerContext;
-
-import java.net.URI;
-import java.time.Clock;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.LongAdder;
-
-import static java.lang.String.format;
-import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
-import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class ConsumerMessageSender {
 

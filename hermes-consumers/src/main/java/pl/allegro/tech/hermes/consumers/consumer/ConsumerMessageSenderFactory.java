@@ -1,5 +1,9 @@
 package pl.allegro.tech.hermes.consumers.consumer;
 
+import java.time.Clock;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.common.message.undelivered.UndeliveredMessageLog;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
@@ -14,11 +18,6 @@ import pl.allegro.tech.hermes.consumers.consumer.result.SuccessHandler;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSenderFactory;
 import pl.allegro.tech.hermes.consumers.consumer.sender.timeout.FutureAsyncTimeout;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
-
-import java.time.Clock;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 public class ConsumerMessageSenderFactory {
 

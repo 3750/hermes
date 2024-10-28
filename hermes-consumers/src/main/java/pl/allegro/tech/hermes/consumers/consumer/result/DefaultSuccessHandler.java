@@ -1,5 +1,10 @@
 package pl.allegro.tech.hermes.consumers.consumer.result;
 
+import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -12,12 +17,6 @@ import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
 import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
-
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
 
 public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChangeListener {
 
