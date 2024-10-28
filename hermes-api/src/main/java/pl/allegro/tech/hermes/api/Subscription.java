@@ -300,7 +300,8 @@ public class Subscription implements Anonymizable {
         endpointAddressResolverMetadata,
         oAuthPolicy,
         http2Enabled,
-        subscriptionIdentityHeadersEnabled);
+        subscriptionIdentityHeadersEnabled,
+        metricsConfig);
   }
 
   @Override
@@ -335,7 +336,8 @@ public class Subscription implements Anonymizable {
         && Objects.equals(this.oAuthPolicy, other.oAuthPolicy)
         && Objects.equals(
             this.subscriptionIdentityHeadersEnabled, other.subscriptionIdentityHeadersEnabled)
-        && Objects.equals(this.autoDeleteWithTopicEnabled, other.autoDeleteWithTopicEnabled);
+        && Objects.equals(this.autoDeleteWithTopicEnabled, other.autoDeleteWithTopicEnabled)
+        && Objects.equals(this.metricsConfig, other.metricsConfig);
   }
 
   @JsonIgnore

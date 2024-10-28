@@ -39,6 +39,7 @@ import pl.allegro.tech.hermes.api.Topic;
 import pl.allegro.tech.hermes.api.TopicName;
 import pl.allegro.tech.hermes.api.TopicPartition;
 import pl.allegro.tech.hermes.api.TrackingMode;
+import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 import pl.allegro.tech.hermes.env.BrokerOperations;
 import pl.allegro.tech.hermes.integrationtests.prometheus.PrometheusExtension;
 import pl.allegro.tech.hermes.integrationtests.setup.HermesExtension;
@@ -279,6 +280,46 @@ public class SubscriptionManagementTest {
     assertThat(policy.getSocketTimeout()).isEqualTo(3000);
     assertThat(policy.isRetryClientErrors()).isFalse();
     assertThat(policy.getSendingDelay()).isEqualTo(1000);
+  }
+
+  @Test
+  public void shouldUpdateMetricsConfiguration() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+    PatchData patchData =
+        patchData()
+            .set(
+                "metricsConfig",
+                ImmutableMap.builder()
+                    .put(
+                        "messageProcessingDuration",
+                        ImmutableMap.builder()
+                            .put("enabled", true)
+                            .put(
+                                "options",
+                                ImmutableMap.builder()
+                                    .put("thresholdsMilliseconds", new String[] {"60000"})
+                                    .build())
+                            .build())
+                    .build())
+            .build();
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateSubscription(topic, subscription.getName(), patchData);
+
+    // then
+    response.expectStatus().isOk();
+    SubscriptionMetricsConfig metricsConfig =
+        hermes
+            .api()
+            .getSubscription(topic.getQualifiedName(), subscription.getName())
+            .getMetricsConfig();
+    assertThat(metricsConfig.messageProcessingDuration().enabled()).isTrue();
+    assertThat(metricsConfig.messageProcessingDuration().options().getThresholdsDurations())
+        .containsExactly(Duration.ofMillis(60000));
   }
 
   @Test
