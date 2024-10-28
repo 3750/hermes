@@ -67,6 +67,7 @@ public class Subscription implements Anonymizable {
 
   private Instant modifiedAt;
 
+  @Valid @NotNull
   private SubscriptionMetricsConfig metricsConfig = SubscriptionMetricsConfig.DISABLED;
 
   private Subscription(

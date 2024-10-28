@@ -323,6 +323,41 @@ public class SubscriptionManagementTest {
   }
 
   @Test
+  public void shouldNotUpdateThresholdsMillisecondsToEmptyList() {
+    // given
+    Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
+    Subscription subscription =
+        hermes.initHelper().createSubscription(subscriptionWithRandomName(topic.getName()).build());
+    PatchData patchData =
+        patchData()
+            .set(
+                "metricsConfig",
+                ImmutableMap.builder()
+                    .put(
+                        "messageProcessingDuration",
+                        ImmutableMap.builder()
+                            .put("enabled", true)
+                            .put(
+                                "options",
+                                ImmutableMap.builder()
+                                    .put("thresholdsMilliseconds", new String[] {})
+                                    .build())
+                            .build())
+                    .build())
+            .build();
+
+    // when
+    WebTestClient.ResponseSpec response =
+        hermes.api().updateSubscription(topic, subscription.getName(), patchData);
+
+    // then
+    response.expectStatus().isBadRequest();
+    assertThat(response.expectBody(String.class).returnResult().getResponseBody())
+        .contains(
+            "Subscription.metricsConfig.messageProcessingDuration.options.thresholdsMilliseconds size must be between 1 and 10");
+  }
+
+  @Test
   public void shouldRemoveSubscription() {
     // given
     Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
