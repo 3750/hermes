@@ -2,12 +2,15 @@ package pl.allegro.tech.hermes.consumers.consumer.result;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import pl.allegro.tech.hermes.api.Subscription;
 import pl.allegro.tech.hermes.api.SubscriptionName;
 import pl.allegro.tech.hermes.api.subscription.metrics.SubscriptionMetricsConfig;
 import pl.allegro.tech.hermes.common.metric.MetricsFacade;
 import pl.allegro.tech.hermes.consumers.consumer.Message;
-import pl.allegro.tech.hermes.consumers.consumer.offset.OffsetQueue;
 import pl.allegro.tech.hermes.consumers.consumer.sender.MessageSendingResult;
 import pl.allegro.tech.hermes.metrics.HermesCounter;
 import pl.allegro.tech.hermes.metrics.HermesHistogram;
@@ -15,11 +18,6 @@ import pl.allegro.tech.hermes.metrics.HermesTimer;
 import pl.allegro.tech.hermes.tracker.consumers.Trackers;
 
 import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static pl.allegro.tech.hermes.consumers.consumer.message.MessageConverter.toMessageMetadata;
-import static pl.allegro.tech.hermes.consumers.consumer.offset.SubscriptionPartitionOffset.subscriptionPartitionOffset;
 
 public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChangeListener {
 
@@ -27,7 +25,6 @@ public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChange
 
     private final Trackers trackers;
     private final SubscriptionName subscriptionName;
-    private final OffsetQueue offsetQueue;
     private final MetricsFacade metrics;
     private final Map<Integer, HermesCounter> httpStatusCodes = new ConcurrentHashMap<>();
     private final HermesCounter throughputInBytes;
@@ -35,12 +32,10 @@ public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChange
     private final HermesHistogram inflightTime;
     private volatile HermesTimer messageProcessingTime;
 
-    public DefaultSuccessHandler(OffsetQueue offsetQueue,
-                                 MetricsFacade metrics,
+    public DefaultSuccessHandler(MetricsFacade metrics,
                                  Trackers trackers,
                                  SubscriptionName subscriptionName,
                                  SubscriptionMetricsConfig metricsConfig) {
-        this.offsetQueue = offsetQueue;
         this.metrics = metrics;
         this.trackers = trackers;
         this.subscriptionName = subscriptionName;
@@ -53,11 +48,12 @@ public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChange
     }
 
     @Override
-    public void handleSuccess(Message message, Subscription subscription, MessageSendingResult result) {
-        offsetQueue.offerCommittedOffset(subscriptionPartitionOffset(subscription.getQualifiedName(),
-                message.getPartitionOffset(), message.getPartitionAssignmentTerm()));
+  public void handleSuccess(
+      Message message, Subscription subscription, MessageSendingResult result) {
         markSuccess(message, result);
-        trackers.get(subscription).logSent(toMessageMetadata(message, subscription), result.getHostname());
+    trackers
+        .get(subscription)
+        .logSent(toMessageMetadata(message, subscription), result.getHostname());
     }
 
     @Override
@@ -77,10 +73,11 @@ public class DefaultSuccessHandler implements SuccessHandler, SubscriptionChange
     }
 
     private void markHttpStatusCode(int statusCode) {
-        httpStatusCodes.computeIfAbsent(
+    httpStatusCodes
+        .computeIfAbsent(
                 statusCode,
-                integer -> metrics.subscriptions().httpAnswerCounter(subscriptionName, statusCode)
-        ).increment();
+            integer -> metrics.subscriptions().httpAnswerCounter(subscriptionName, statusCode))
+        .increment();
     }
 
     private void markMessageProcessingTime(Message message) {
