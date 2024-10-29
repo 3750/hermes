@@ -1,13 +1,15 @@
 package pl.allegro.tech.hermes.api.subscription.metrics;
 
-public record SubscriptionMetricConfig<T>(boolean enabled, T options) {
+import jakarta.validation.Valid;
 
-    public static <T> SubscriptionMetricConfig<T> disabled() {
-        return new SubscriptionMetricConfig<>(false, null);
-    }
+public record SubscriptionMetricConfig<T>(boolean enabled, @Valid T options) {
 
-    @Override
-    public String toString() {
-        return "{enabled=" + enabled + ", options=" + options + '}';
-    }
+  public static <T> SubscriptionMetricConfig<T> disabled() {
+    return new SubscriptionMetricConfig<>(false, null);
+  }
+
+  @Override
+  public String toString() {
+    return "{enabled=" + enabled + ", options=" + options + '}';
+  }
 }

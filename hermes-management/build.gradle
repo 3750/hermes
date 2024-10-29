@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'application'
-    id "com.github.node-gradle.node" version "3.0.0"
+    id "com.github.node-gradle.node" version "7.0.2"
 }
 
 mainClassName = 'pl.allegro.tech.hermes.management.HermesManagement'
@@ -18,7 +18,7 @@ dependencies {
     implementation group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4'
     implementation group: 'org.glassfish.jersey.ext', name: 'jersey-mvc-freemarker', version: versions.jersey
 
-    implementation (group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.6.14') {
+    implementation(group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: '1.6.14') {
         exclude group: 'javax.validation', module: 'validation-api'
     }
 
@@ -51,9 +51,9 @@ node {
     version = '20.4.0'
     distBaseUrl = 'https://nodejs.org/dist'
     download = true
-    workDir = file("${project.buildDir}/nodejs")
-    npmWorkDir = file("${project.buildDir}/npm")
-    nodeModulesDir = file("${project.rootDir}/hermes-console")
+    workDir.set(file("${project.buildDir}/nodejs"))
+    npmWorkDir.set(file("${project.buildDir}/npm"))
+    nodeProjectDir.set(file("${project.rootDir}/hermes-console"))
 }
 
 yarnSetup.dependsOn(nodeSetup)

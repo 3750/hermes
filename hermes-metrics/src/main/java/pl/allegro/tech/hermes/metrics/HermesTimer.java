@@ -5,21 +5,21 @@ import io.micrometer.core.instrument.Timer;
 import java.time.Duration;
 
 public class HermesTimer {
-    private final Timer micrometerTimer;
+  private final Timer micrometerTimer;
 
-    private HermesTimer(Timer micrometerTimer) {
-        this.micrometerTimer = micrometerTimer;
-    }
+  private HermesTimer(Timer micrometerTimer) {
+    this.micrometerTimer = micrometerTimer;
+  }
 
-    public static HermesTimer from(io.micrometer.core.instrument.Timer micrometerTimer) {
-        return new HermesTimer(micrometerTimer);
-    }
+  public static HermesTimer from(io.micrometer.core.instrument.Timer micrometerTimer) {
+    return new HermesTimer(micrometerTimer);
+  }
 
-    public HermesTimerContext time() {
-        return HermesTimerContext.from(micrometerTimer);
-    }
+  public HermesTimerContext time() {
+    return HermesTimerContext.from(micrometerTimer);
+  }
 
-    public void record(Duration duration) {
-        micrometerTimer.record(duration);
-    }
+  public void record(Duration duration) {
+    micrometerTimer.record(duration);
+  }
 }

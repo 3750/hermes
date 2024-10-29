@@ -1,6 +1,11 @@
 package pl.allegro.tech.hermes.api.subscription.metrics;
 
+import jakarta.validation.Valid;
+
 public record SubscriptionMetricsConfig(
-        SubscriptionMetricConfig<MessageProcessingDurationMetricOptions> messageProcessingDuration) {
-    public static final SubscriptionMetricsConfig DISABLED = new SubscriptionMetricsConfig(SubscriptionMetricConfig.disabled());
+    @Valid
+        SubscriptionMetricConfig<MessageProcessingDurationMetricOptions>
+            messageProcessingDuration) {
+  public static final SubscriptionMetricsConfig DISABLED =
+      new SubscriptionMetricsConfig(SubscriptionMetricConfig.disabled());
 }
