@@ -10,7 +10,8 @@ import pl.allegro.tech.hermes.api.MetricValue;
 public class MonitoringMetricsContainer {
 
   private static final MetricDecimalValue DEFAULT_VALUE = MetricDecimalValue.of("0.0");
-  private static final MetricHistogramValue DEFAULT_HISTOGRAM_VALUE = MetricHistogramValue.of();
+  private static final MetricHistogramValue DEFAULT_HISTOGRAM_VALUE =
+      MetricHistogramValue.defaultValue();
 
   private final Map<String, MetricValue> metrics;
   private final boolean isAvailable;

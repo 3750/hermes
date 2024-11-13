@@ -131,13 +131,15 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
 
   private static MetricHistogramValue parseHistogram(
       List<PrometheusResponse.VectorResult> results) {
-    Map<String, String> collect =
+    Map<String, String> buckets =
         results.stream()
             .collect(
                 Collectors.toMap(
                     vectorResult -> vectorResult.metric().le(),
                     vectorResult -> vectorResult.getLongValue().orElse(0L).toString()));
-    return MetricHistogramValue.of(collect);
+    return buckets.isEmpty()
+        ? MetricHistogramValue.defaultValue()
+        : MetricHistogramValue.of(buckets);
   }
 
   private static MetricDecimalValue parseDecimal(List<PrometheusResponse.VectorResult> results) {
