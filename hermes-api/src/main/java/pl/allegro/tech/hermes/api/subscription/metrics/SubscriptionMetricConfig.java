@@ -8,6 +8,10 @@ public record SubscriptionMetricConfig<T>(boolean enabled, @Valid T options) {
     return new SubscriptionMetricConfig<>(false, null);
   }
 
+  public static <T> SubscriptionMetricConfig<T> enabled(T options) {
+    return new SubscriptionMetricConfig<>(true, options);
+  }
+
   @Override
   public String toString() {
     return "{enabled=" + enabled + ", options=" + options + '}';

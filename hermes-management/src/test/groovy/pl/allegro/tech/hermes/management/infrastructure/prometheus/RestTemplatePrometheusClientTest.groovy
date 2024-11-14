@@ -92,7 +92,7 @@ class RestTemplatePrometheusClientTest extends Specification {
         metrics.metricValue(subscription2xxStatusCodesQuery) == of("2.0")
         metrics.metricValue(subscription4xxStatusCodesQuery) == of("1.0")
         metrics.metricValue(subscription5xxStatusCodesQuery) == of("2.0")
-        metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.of("+Inf", "4", "300.0", "4", "1.0", "0")
+        metrics.metricHistogramValue(subscriptionProcessingTimeQuery) == MetricHistogramValue.ofBuckets("+Inf", "4", "300.0", "4", "1.0", "0")
     }
 
     def "should return default value when metric has no value"() {

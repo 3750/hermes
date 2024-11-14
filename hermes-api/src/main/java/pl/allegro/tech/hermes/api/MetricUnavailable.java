@@ -7,4 +7,9 @@ public enum MetricUnavailable implements MetricValue {
   public boolean isAvailable() {
     return false;
   }
+
+  @Override
+  public String toString() {
+    return "MetricUnavailable";
+  }
 }
