@@ -1,6 +1,5 @@
 package pl.allegro.tech.hermes.frontend.producer.kafka
 
-
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.kafka.clients.admin.AdminClient
@@ -93,7 +92,7 @@ class LocalDatacenterMessageProducerIntegrationTest extends Specification {
     String datacenter = "dc"
 
     @Shared
-    ScheduledExecutorService chaosScheduler = Executors.newSingleThreadScheduledExecutor();
+    ScheduledExecutorService chaosScheduler = Executors.newSingleThreadScheduledExecutor()
 
     @Shared
     MetricsFacade metricsFacade = new MetricsFacade(new SimpleMeterRegistry())

@@ -18,7 +18,8 @@ import pl.allegro.tech.hermes.api.ConsumerGroup;
 import pl.allegro.tech.hermes.api.Group;
 import pl.allegro.tech.hermes.api.MessageFiltersVerificationInput;
 import pl.allegro.tech.hermes.api.OAuthProvider;
-import pl.allegro.tech.hermes.api.OfflineRetransmissionRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionFromTopicRequest;
+import pl.allegro.tech.hermes.api.OfflineRetransmissionFromViewRequest;
 import pl.allegro.tech.hermes.api.OffsetRetransmissionDate;
 import pl.allegro.tech.hermes.api.PatchData;
 import pl.allegro.tech.hermes.api.Subscription;
@@ -118,6 +119,13 @@ public class HermesTestClient {
         .is2xxSuccessful();
   }
 
+  public WebTestClient.ResponseSpec activateSubscription(Topic topic, String subscription) {
+    return managementTestClient
+        .updateSubscriptionState(topic, subscription, Subscription.State.ACTIVE)
+        .expectStatus()
+        .is2xxSuccessful();
+  }
+
   public void waitUntilSubscriptionActivated(String topicQualifiedName, String subscriptionName) {
     waitAtMost(Duration.ofSeconds(10))
         .untilAsserted(
@@ -181,7 +189,7 @@ public class HermesTestClient {
             });
   }
 
-  private long calculateCommittedMessages(String topicQualifiedName, String subscription) {
+  public long calculateCommittedMessages(String topicQualifiedName, String subscription) {
     AtomicLong messagesCommittedCount = new AtomicLong(0);
     List<ConsumerGroup> consumerGroups =
         getConsumerGroupsDescription(topicQualifiedName, subscription)
@@ -508,7 +516,12 @@ public class HermesTestClient {
   }
 
   public WebTestClient.ResponseSpec createOfflineRetransmissionTask(
-      OfflineRetransmissionRequest request) {
+      OfflineRetransmissionFromTopicRequest request) {
+    return managementTestClient.createOfflineRetransmissionTask(request);
+  }
+
+  public WebTestClient.ResponseSpec createOfflineRetransmissionTask(
+      OfflineRetransmissionFromViewRequest request) {
     return managementTestClient.createOfflineRetransmissionTask(request);
   }
 
@@ -543,10 +556,5 @@ public class HermesTestClient {
 
   public List<String> getGroups() {
     return managementTestClient.getGroups();
-  }
-
-  public WebTestClient.ResponseSpec moveOffsetsToTheEnd(
-      String topicQualifiedName, String subscriptionName) {
-    return managementTestClient.moveOffsetsToTheEnd(topicQualifiedName, subscriptionName);
   }
 }
