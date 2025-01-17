@@ -45,8 +45,7 @@ public record SubscriptionMetrics(
         (bucket, count) ->
             results.add(
                 new PrometheusResponse.Result(
-                    new PrometheusResponse.Metric(bucket),
-                    List.of(TIMESTAMP, String.valueOf(count)))));
+                    new PrometheusResponse.Metric(bucket), List.of(TIMESTAMP, count))));
     return new PrometheusResponse("success", new PrometheusResponse.Data("vector", results));
   }
 
