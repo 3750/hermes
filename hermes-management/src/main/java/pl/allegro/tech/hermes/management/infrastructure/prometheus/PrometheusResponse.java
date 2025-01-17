@@ -20,16 +20,26 @@ record PrometheusResponse(@JsonProperty("status") String status, @JsonProperty("
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
-  record VectorResult(@JsonProperty("value") List<String> vector) {
+  record VectorResult(
+      @JsonProperty("metric") Metric metric, @JsonProperty("value") List<String> vector) {
 
     private static final int VALID_VECTOR_LENGTH = 2;
     private static final int SCALAR_INDEX_VALUE = 1;
 
-    Optional<Double> getValue() {
+    Optional<Double> getDoubleValue() {
       if (vector.size() != VALID_VECTOR_LENGTH) {
         return Optional.empty();
       }
       return Optional.of(Double.parseDouble(vector.get(SCALAR_INDEX_VALUE)));
     }
+
+    Optional<Long> getLongValue() {
+      if (vector.size() != VALID_VECTOR_LENGTH) {
+        return Optional.empty();
+      }
+      return Optional.of(Long.parseLong(vector.get(SCALAR_INDEX_VALUE)));
+    }
+
+    record Metric(@JsonProperty("le") String le) {}
   }
 }
