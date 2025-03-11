@@ -18,6 +18,14 @@ record PrometheusResponse(@JsonProperty("status") String status, @JsonProperty("
     boolean isVector() {
       return resultType.equals("vector");
     }
+
+    public boolean isHistogram() {
+      return !results.isEmpty()
+          && results.stream()
+              .allMatch(
+                  vectorResult ->
+                      vectorResult.metric() != null && vectorResult.metric().le() != null);
+    }
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)

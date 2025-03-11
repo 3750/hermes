@@ -7,8 +7,9 @@ public record MetricHistogramValue(boolean available, Map<String, String> bucket
 
   private static final MetricHistogramValue UNAVAILABLE =
       new MetricHistogramValue(false, Map.of("+Inf", "-1"));
+  private static final String DEFAULT_BUCKET_VALUE = "0";
   private static final MetricHistogramValue DEFAULT_VALUE =
-      new MetricHistogramValue(true, Map.of("+Inf", "0"));
+      new MetricHistogramValue(true, Map.of("+Inf", DEFAULT_BUCKET_VALUE));
 
   public static MetricHistogramValue ofBuckets(Map<String, String> buckets) {
     return new MetricHistogramValue(true, buckets);
@@ -33,6 +34,10 @@ public record MetricHistogramValue(boolean available, Map<String, String> bucket
 
   public static MetricHistogramValue defaultValue() {
     return DEFAULT_VALUE;
+  }
+
+  public static String defaultBucketValue() {
+    return DEFAULT_BUCKET_VALUE;
   }
 
   @Override

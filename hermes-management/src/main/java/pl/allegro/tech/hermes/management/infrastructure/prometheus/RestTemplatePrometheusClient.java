@@ -125,12 +125,7 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
   private MetricValue parseResponse(PrometheusResponse response) {
     List<PrometheusResponse.VectorResult> results = response.data().results();
 
-    boolean isHistogram =
-        !results.isEmpty()
-            && results.stream()
-                .allMatch(
-                    vectorResult ->
-                        vectorResult.metric() != null && vectorResult.metric().le() != null);
+    boolean isHistogram = response.data().isHistogram();
     return isHistogram ? parseHistogram(results) : parseDecimal(results);
   }
 
@@ -141,7 +136,11 @@ public class RestTemplatePrometheusClient implements PrometheusClient {
             .collect(
                 Collectors.toMap(
                     vectorResult -> vectorResult.metric().le(),
-                    vectorResult -> vectorResult.getLongValue().orElse(0L).toString()));
+                    vectorResult ->
+                        vectorResult
+                            .getLongValue()
+                            .map(Object::toString)
+                            .orElse(MetricHistogramValue.defaultBucketValue())));
     return buckets.isEmpty()
         ? MetricHistogramValue.defaultValue()
         : MetricHistogramValue.ofBuckets(buckets);
