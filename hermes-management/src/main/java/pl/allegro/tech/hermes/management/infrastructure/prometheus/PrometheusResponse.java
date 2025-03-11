@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 record PrometheusResponse(@JsonProperty("status") String status, @JsonProperty("data") Data data) {
 
@@ -27,17 +28,18 @@ record PrometheusResponse(@JsonProperty("status") String status, @JsonProperty("
     private static final int SCALAR_INDEX_VALUE = 1;
 
     Optional<Double> getDoubleValue() {
-      if (vector.size() != VALID_VECTOR_LENGTH) {
-        return Optional.empty();
-      }
-      return Optional.of(Double.parseDouble(vector.get(SCALAR_INDEX_VALUE)));
+      return getValue(Double::parseDouble);
     }
 
     Optional<Long> getLongValue() {
+      return getValue(Long::parseLong);
+    }
+
+    private <T> Optional<T> getValue(Function<String, T> parser) {
       if (vector.size() != VALID_VECTOR_LENGTH) {
         return Optional.empty();
       }
-      return Optional.of(Long.parseLong(vector.get(SCALAR_INDEX_VALUE)));
+      return Optional.of(parser.apply(vector.get(SCALAR_INDEX_VALUE)));
     }
 
     record Metric(@JsonProperty("le") String le) {}
