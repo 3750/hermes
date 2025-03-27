@@ -134,7 +134,7 @@ public class SubscriptionMetrics {
       SubscriptionMetricConfig<MessageProcessingDurationMetricOptions> metricConfig) {
     Set<Tag> subscriptionTags = subscriptionTags(subscriptionName);
     removeExistingMeter(SubscriptionMetricsNames.SUBSCRIPTION_PROCESSING_TIME, subscriptionTags);
-    if (metricConfig.enabled()) {
+    if (metricConfig.enabled() && metricConfig.options().hasThresholds()) {
       return HermesTimer.from(
           Timer.builder(SubscriptionMetricsNames.SUBSCRIPTION_PROCESSING_TIME)
               .tags(subscriptionTags)

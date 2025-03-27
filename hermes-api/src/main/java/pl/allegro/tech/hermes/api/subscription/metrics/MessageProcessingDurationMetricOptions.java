@@ -18,4 +18,8 @@ public record MessageProcessingDurationMetricOptions(
   public String toString() {
     return "{thresholdsMilliseconds=" + Arrays.toString(thresholdsMilliseconds) + '}';
   }
+
+  public boolean hasThresholds() {
+    return thresholdsMilliseconds.length > 0;
+  }
 }
