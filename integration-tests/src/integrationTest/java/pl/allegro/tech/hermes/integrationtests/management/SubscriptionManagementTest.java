@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableMap;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -289,18 +290,13 @@ public class SubscriptionManagementTest {
         patchData()
             .set(
                 "metricsConfig",
-                ImmutableMap.builder()
-                    .put(
-                        "messageProcessingDuration",
-                        ImmutableMap.builder()
-                            .put("enabled", true)
-                            .put(
-                                "options",
-                                ImmutableMap.builder()
-                                    .put("thresholdsMilliseconds", new String[] {"60000"})
-                                    .build())
-                            .build())
-                    .build())
+                Map.of(
+                    "messageProcessingDuration",
+                    Map.of(
+                        "enabled",
+                        true,
+                        "options",
+                        Map.of("thresholdsMilliseconds", new String[] {"60000"}))))
             .build();
 
     // when
