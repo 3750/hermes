@@ -6,7 +6,7 @@ import java.time.Duration;
 import java.util.Arrays;
 
 public record MessageProcessingDurationMetricOptions(
-    @Size(min = 1, max = 10) long[] thresholdsMilliseconds) {
+    @Size(max = 10) long[] thresholdsMilliseconds) {
   @JsonIgnore
   public Duration[] getThresholdsDurations() {
     return Arrays.stream(thresholdsMilliseconds)
