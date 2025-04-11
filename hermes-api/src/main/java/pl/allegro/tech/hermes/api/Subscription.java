@@ -122,7 +122,7 @@ public class Subscription implements Anonymizable {
     this.oAuthPolicy = oAuthPolicy;
     this.subscriptionIdentityHeadersEnabled = subscriptionIdentityHeadersEnabled;
     this.autoDeleteWithTopicEnabled = autoDeleteWithTopicEnabled;
-    this.metricsConfig = metricsConfig;
+    this.metricsConfig = metricsConfig == null ? SubscriptionMetricsConfig.DISABLED : metricsConfig;
   }
 
   public static Subscription createSerialSubscription(

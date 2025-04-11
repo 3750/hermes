@@ -74,7 +74,7 @@ public class SubscriptionBuilder {
 
   private boolean autoDeleteWithTopicEnabled = false;
 
-  private SubscriptionMetricsConfig metricsConfig = SubscriptionMetricsConfig.DISABLED;
+  private SubscriptionMetricsConfig metricsConfig = null;
 
   private SubscriptionBuilder(
       TopicName topicName, String subscriptionName, EndpointAddress endpoint) {

@@ -316,7 +316,7 @@ public class SubscriptionManagementTest {
   }
 
   @Test
-  public void shouldNotUpdateThresholdsMillisecondsToEmptyList() {
+  public void shouldUpdateThresholdsMillisecondsToEmptyList() {
     // given
     Topic topic = hermes.initHelper().createTopic(topicWithRandomName().build());
     Subscription subscription =
@@ -344,10 +344,14 @@ public class SubscriptionManagementTest {
         hermes.api().updateSubscription(topic, subscription.getName(), patchData);
 
     // then
-    response.expectStatus().isBadRequest();
-    assertThat(response.expectBody(String.class).returnResult().getResponseBody())
-        .contains(
-            "Subscription.metricsConfig.messageProcessingDuration.options.thresholdsMilliseconds size must be between 1 and 10");
+    response.expectStatus().isOk();
+    SubscriptionMetricsConfig metricsConfig =
+        hermes
+            .api()
+            .getSubscription(topic.getQualifiedName(), subscription.getName())
+            .getMetricsConfig();
+    assertThat(metricsConfig.messageProcessingDuration().options().thresholdsMilliseconds())
+        .isEmpty();
   }
 
   @Test
