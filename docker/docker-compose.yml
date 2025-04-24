@@ -90,13 +90,23 @@ services:
     ports:
       - "8081:8081"
 
+  grafana:
+    image: "grafana/grafana-oss:${GRAFANA_IMAGES_TAG}"
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana:/var/lib/grafana
+      - ./grafana/provisioning/:/etc/grafana/provisioning
+      - ./grafana/provisioning/dashboards:/var/lib/grafana/dashboards
+
 volumes:
   zk_secrets:
   zk_data:
   zk_log:
   kafka_data:
   kafka_secrets:
-
-
+  grafana:
 
 
